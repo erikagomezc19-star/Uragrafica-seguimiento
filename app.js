@@ -4,7 +4,8 @@ import {
   onSnapshot, query, orderBy, updateDoc, doc, deleteDoc
 } from "./firebase.js";
 
-const ESTADOS = ["Diseño","Producción","Terminación","Despachado","Entregado"];
+const ESTADOS = ["Diseño","Producción","Terminación","Realizado","Entregado"];
+
 
 // Helpers
 const $  = (q) => document.querySelector(q);
