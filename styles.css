@@ -41,10 +41,29 @@ button.danger{background:#7f1d1d; border-color:#7f1d1d}
   display:grid; grid-template-columns: 1fr 1fr 1fr 180px 140px; gap:14px;
   padding:16px 20px; background:#0c1020; border-bottom:1px solid var(--border);
 }
-.composer input, .composer select{
-  padding:12px 14px; border-radius:12px; border:1px solid var(--border);
-  background:var(--panel-2); color:var(--txt);
+.composer input, .composer select {
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid #ccc;       /* gris suave */
+  background:#fff;             /* fondo blanco */
+  color:#000;                  /* texto negro */
+  font-size:15px;
 }
+
+.composer input::placeholder {
+  color:#666;                  /* gris más visible */
+}
+
+button.primary {
+  background:#16a34a;          /* verde UraGráfica */
+  border-color:#16a34a;
+  color:#fff;
+  font-weight:600;
+}
+button.primary:hover {
+  background:#22c55e;          /* verde más claro al pasar */
+}
+
 
 /* Board */
 .board{
