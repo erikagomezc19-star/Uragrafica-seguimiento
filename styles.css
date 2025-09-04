@@ -1,6 +1,6 @@
 :root{
   --bg:#ffffff;          /* Fondo general blanco */
-  --panel:#f9fafb;       /* Paneles gris muy claro */
+  --panel:#f3f4f6;       /* Paneles gris medio */
   --panel-2:#ffffff;     /* Inputs fondo blanco */
   --txt:#111111;         /* Texto principal negro */
   --muted:#555555;       /* Texto secundario gris */
@@ -68,17 +68,17 @@ button.danger{background:#dc2626; border-color:#dc2626; color:#fff}
   letter-spacing:.3px; color:#000;
 }
 .badge-count{
-  font-size:12px; background:#f3f4f6; color:#555;
+  font-size:12px; background:#e5e7eb; color:#555;
   border:1px dashed var(--border); padding:2px 8px; border-radius:999px;
 }
 .empty{
-  color:#777; border:1px dashed var(--border); border-radius:14px;
-  padding:18px; text-align:center; background:#fafafa;
+  color:#555; border:1px dashed var(--border); border-radius:14px;
+  padding:18px; text-align:center; background:#f3f4f6;
 }
 
 /* Cards */
 .card{
-  background:#fff; border:1px solid var(--border); border-radius:16px;
+  background:#f9fafb; border:1px solid var(--border); border-radius:16px;
   padding:16px; display:flex; flex-direction:column; gap:8px;
   color:#000;
 }
@@ -97,7 +97,7 @@ select.state{
   padding:8px 10px; border-radius:10px;
 }
 .iconbtn{
-  width:40px; height:36px; border-radius:10px; background:#f3f4f6; border:1px solid var(--border);
+  width:40px; height:36px; border-radius:10px; background:#e5e7eb; border:1px solid var(--border);
   color:#000; cursor:pointer; transition:filter .15s;
 }
 .iconbtn:hover{filter:brightness(0.9)}
@@ -107,11 +107,11 @@ select.state{
 .foot{padding:24px; text-align:center; color:#555}
 
 /* Colores de títulos por columna (con y sin acentos) */
-.c-diseno h2,.c-diseño h2{color:#2563eb}     /* azul */
+.c-diseno h2,.c-diseño h2{color:#2563eb}       /* azul */
 .c-produccion h2,.c-producción h2{color:#9333ea} /* morado */
 .c-terminacion h2,.c-terminación h2{color:#db2777} /* rosa */
 .c-realizado h2,.c-despachado h2{color:#f97316}   /* naranja */
-.c-entregado h2{color:#16a34a}              /* verde */
+.c-entregado h2{color:#16a34a}                /* verde */
 
 /* Responsive */
 @media (max-width:1200px){ .board{ grid-template-columns: repeat(2, 1fr);} }
