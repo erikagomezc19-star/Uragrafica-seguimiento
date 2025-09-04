@@ -1,36 +1,48 @@
-import { db, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, updateDoc, doc, deleteDoc } from "./firebase.js";
+// app.js — Uragráfica (Firestore)
+import {
+  db, collection, addDoc, serverTimestamp,
+  onSnapshot, query, orderBy, updateDoc, doc, deleteDoc
+} from "./firebase.js";
 
+// Estados en orden de flujo
 const ESTADOS = ["Diseño","Producción","Terminación","Despachado","Entregado"];
-const $ = (q) => document.querySelector(q);
-const el = (t, c) => { const e = document.createElement(t); if(c) e.className=c; return e; }
-const fmtDate = (d) => d?.toDate ? d.toDate().toLocaleString() : (d ? new Date(d).toLocaleString() : "—");
-const progreso = (estado) => (ESTADOS.indexOf(estado) + 1) * 20;
 
-const board = $("#board");
-const inOrden = $("#inOrden");
-const inCliente = $("#inCliente");
+// Helpers
+const $  = (q) => document.querySelector(q);
+const el = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
+const fmtDate = (d) => d?.toDate ? d.toDate().toLocaleString() : (d ? new Date(d).toLocaleString() : "—");
+const progreso = (estado) => (Math.max(0, ESTADOS.indexOf(estado)) + 1) * 20;
+const escapeHtml = (s="") => s.replace(/[&<>'"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;" }[c]));
+
+// DOM refs
+const board      = $("#board");
+const inOrden    = $("#inOrden");
+const inCliente  = $("#inCliente");
 const inProducto = $("#inProducto");
-const inEstado = $("#inEstado");
-const btnAdd = $("#btnAdd");
-const search = $("#q");
-const btnExport = $("#btnExport");
-const btnClear = $("#btnClear");
+const inEstado   = $("#inEstado");
+const btnAdd     = $("#btnAdd");
+const search     = $("#q");
+
+const btnExport  = $("#btnExport");
 const fileImport = $("#fileImport");
 const btnMigrate = $("#btnMigrate");
+const btnClear   = $("#btnClear");
 
-// Llenar select
-ESTADOS.forEach(e=>{
+// Llena el selector de estados del formulario
+ESTADOS.forEach(e => {
   const opt = document.createElement("option");
   opt.value = e; opt.textContent = e;
   inEstado.appendChild(opt);
 });
 
+// Estado en memoria (se alimenta de Firestore realtime)
 let ORDERS = [];
 
-// ===== Lectura realtime de Firestore =====
+// ===== Firestore realtime =====
 const ordersCol = collection(db, "orders");
-const q = query(ordersCol, orderBy("createdAt","desc"));
-onSnapshot(q, (snap) => {
+const qOrders   = query(ordersCol, orderBy("createdAt", "desc"));
+
+onSnapshot(qOrders, (snap) => {
   ORDERS = [];
   snap.forEach(d => ORDERS.push({ id: d.id, ...d.data() }));
   render();
@@ -39,30 +51,40 @@ onSnapshot(q, (snap) => {
 // ===== Render =====
 function render(){
   board.innerHTML = "";
+
   ESTADOS.forEach((estado) => {
-    const col = el("section", `column c-${estado.toLowerCase()}`);
+    // clase de columna (con y sin acentos para que pinte colores)
+    const clsNoAccent = estado
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .toLowerCase();
+    const col = el("section", `column c-${clsNoAccent} c-${estado.toLowerCase()}`);
+
+    // encabezado
     const h2 = el("h2");
     const title = el("div"); title.textContent = estado;
     const count = el("span","badge-count");
-    const colOrders = filtered().filter(o => o.estado === estado);
-    count.textContent = colOrders.length;
+
+    const items = filtered().filter(o => o.estado === estado);
+    count.textContent = items.length;
     h2.appendChild(title); h2.appendChild(count);
     col.appendChild(h2);
 
-    if(colOrders.length === 0){
+    // tarjetas o vacío
+    if (items.length === 0) {
       const empty = el("div","empty");
       empty.textContent = `Sin pedidos en ${estado}`;
       col.appendChild(empty);
     } else {
-      colOrders.forEach(o => col.appendChild(renderCard(o)));
+      items.forEach(o => col.appendChild(renderCard(o)));
     }
+
     board.appendChild(col);
   });
 }
 
 function filtered(){
-  const k = (search.value || "").trim().toLowerCase();
-  if(!k) return ORDERS;
+  const k = (search?.value || "").trim().toLowerCase();
+  if (!k) return ORDERS;
   return ORDERS.filter(o =>
     (o.orden||"").toLowerCase().includes(k) ||
     (o.cliente||"").toLowerCase().includes(k) ||
@@ -72,11 +94,14 @@ function filtered(){
 
 function renderCard(o){
   const card = el("article","card");
+
+  // Header: #orden + progreso
   const head = el("div","card-head");
-  const tag = el("span","tag"); tag.textContent = `#${o.orden}`;
+  const tag  = el("span","tag");     tag.textContent = `#${o.orden}`;
   const prog = el("span","progress"); prog.textContent = `${progreso(o.estado)}%`;
   head.appendChild(tag); head.appendChild(prog);
 
+  // Meta
   const meta = el("div","meta");
   meta.innerHTML = `
     <div><b>Cliente:</b> ${escapeHtml(o.cliente)}</div>
@@ -84,21 +109,29 @@ function renderCard(o){
     <div>Creado: ${fmtDate(o.createdAt)} · Último cambio: ${fmtDate(o.updatedAt)}</div>
   `;
 
+  // Acciones: ←  [select estado]  →  🗑
   const act = el("div","card-actions");
-  const btnLeft = el("button","iconbtn"); btnLeft.textContent = "←";
-  const btnRight = el("button","iconbtn"); btnRight.textContent = "→";
+
+  const btnLeft  = el("button","iconbtn");        btnLeft.textContent  = "←";
+  const btnRight = el("button","iconbtn");        btnRight.textContent = "→";
+  const btnDel   = el("button","iconbtn danger"); btnDel.textContent   = "🗑";
+
   const sel = el("select","state");
   ESTADOS.forEach(s => {
-    const opt = el("option"); opt.value=s; opt.textContent=s;
-    if(s===o.estado) opt.selected=true;
+    const opt = el("option"); opt.value = s; opt.textContent = s;
+    if (s === o.estado) opt.selected = true;
     sel.appendChild(opt);
   });
-  const btnDel = el("button","iconbtn danger"); btnDel.textContent="🗑";
 
-  btnLeft.onclick = ()=> move(o, -1);
-  btnRight.onclick = ()=> move(o, +1);
-  sel.onchange = (e)=> updateState(o, e.target.value);
-  btnDel.onclick = ()=> { if(confirm("¿Estás seguro de eliminar esta orden?")) remove(o); };
+  btnLeft.onclick  = ()   => move(o, -1);
+  btnRight.onclick = ()   => move(o, +1);
+  sel.onchange     = (ev) => updateState(o, ev.target.value);
+  btnDel.onclick   = ()   => confirm("¿Estás seguro de eliminar esta orden? Esta acción no se puede deshacer.") && remove(o);
+
+  act.appendChild(btnLeft);
+  act.appendChild(sel);
+  act.appendChild(btnRight);
+  act.appendChild(btnDel);
 
   card.appendChild(head);
   card.appendChild(meta);
@@ -106,49 +139,97 @@ function renderCard(o){
   return card;
 }
 
-// ===== CRUD Firestore =====
+// ===== CRUD =====
 async function add(data){
   await addDoc(ordersCol, {
-    orden: (data.orden||"").trim(),
-    cliente: (data.cliente||"").trim(),
+    orden:    (data.orden||"").trim(),
+    cliente:  (data.cliente||"").trim(),
     producto: (data.producto||"").trim(),
-    estado: data.estado || ESTADOS[0],
+    estado:    data.estado || ESTADOS[0],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
 }
+
 async function updateState(o, estado){
-  await updateDoc(doc(db,"orders",o.id), { estado, updatedAt: serverTimestamp() });
+  await updateDoc(doc(db,"orders",o.id), {
+    estado, updatedAt: serverTimestamp()
+  });
 }
+
 async function move(o, dir){
   const i = ESTADOS.indexOf(o.estado);
-  const j = Math.max(0, Math.min(ESTADOS.length-1, i + dir));
-  if(i!==j) await updateState(o, ESTADOS[j]);
+  const j = Math.max(0, Math.min(ESTADOS.length - 1, i + dir));
+  if (i !== j) await updateState(o, ESTADOS[j]);
 }
+
 async function remove(o){
-  await deleteDoc(doc(db,"orders",o.id));
+  await deleteDoc(doc(db,"orders", o.id));
 }
 
 // ===== Eventos UI =====
-btnAdd.onclick = async ()=>{
-  const orden = inOrden.value.trim();
+btnAdd.onclick = async () => {
+  const orden   = inOrden.value.trim();
   const cliente = inCliente.value.trim();
-  const producto = inProducto.value.trim();
-  const estado = inEstado.value;
-  if(!orden || !cliente || !producto){ alert("Completa Orden, Cliente y Producto."); return; }
-  await add({orden,cliente,producto,estado});
+  const producto= inProducto.value.trim();
+  const estado  = inEstado.value;
+
+  if (!orden || !cliente || !producto) {
+    alert("Completa Orden, Cliente y Producto.");
+    return;
+  }
+  await add({ orden, cliente, producto, estado });
+
   inOrden.value = inCliente.value = inProducto.value = "";
   inEstado.value = ESTADOS[0];
   inOrden.focus();
 };
-search.oninput = ()=> render();
 
-btnExport.onclick = ()=>{
-  const blob = new Blob([JSON.stringify(ORDERS, null, 2)], {type:"application/json"});
+search?.addEventListener("input", render);
+
+// Exportar (backup local)
+btnExport?.addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(ORDERS, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "uragrafica_backup.json";
-  a.click(); URL.revokeObjectURL(a.href);
-};
-btnClear.onclick = ()=> alert("Con Firestore no se borran todos desde aquí. Borra en la consola.");
-function escapeHtml(s=""){ return s.replace(/[&<>'\"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;" }[c])); }
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+// Importar (sube al Firestore actual)
+fileImport?.addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!Array.isArray(data)) throw new Error("Formato inválido");
+    for (const d of data) {
+      await add({
+        orden: d.orden, cliente: d.cliente, producto: d.producto,
+        estado: ESTADOS.includes(d.estado) ? d.estado : ESTADOS[0]
+      });
+    }
+    alert("Importación a Firestore completada.");
+  } catch (err) {
+    alert("No se pudo importar: " + err.message);
+  } finally {
+    e.target.value = "";
+  }
+});
+
+// Migrar (copia JSON al portapapeles)
+btnMigrate?.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(ORDERS));
+    alert("Copiado al portapapeles.");
+  } catch {
+    prompt("Copia el JSON:", JSON.stringify(ORDERS));
+  }
+});
+
+// Borrar todo (solo aviso: el borrado masivo se hace en la consola de Firebase)
+btnClear?.addEventListener("click", () => {
+  alert("Para borrar TODO, usa la consola de Firebase (Firestore → Colección orders).");
+});
+
