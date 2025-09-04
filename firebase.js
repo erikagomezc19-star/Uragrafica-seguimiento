@@ -1,10 +1,11 @@
-// firebase.js
+// firebase.js — versión para GitHub Pages usando módulos ESM del CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
   getFirestore, collection, addDoc, serverTimestamp,
   onSnapshot, query, orderBy, updateDoc, doc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
+// 👇 Pega tu config EXACTA de Firebase (la de tu captura)
 const firebaseConfig = {
   apiKey: "AIzaSyCjYwk5u4D3ys6D_NZqQN2u_taEWKoUzKA",
   authDomain: "uragrafica-d0ac3.firebaseapp.com",
@@ -18,7 +19,11 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const db  = getFirestore(app);
 
+// Re-exporto lo que usa app.js
 export {
   collection, addDoc, serverTimestamp,
   onSnapshot, query, orderBy, updateDoc, doc, deleteDoc
 };
+
+// Para verificar carga correcta (mira la consola del navegador)
+console.log("[firebase.js] Firebase inicializado:", firebaseConfig.projectId);
