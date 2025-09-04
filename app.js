@@ -1,20 +1,18 @@
-// app.js — Uragráfica (Firestore)
+// app.js — Uragráfica (Firestore, acciones visibles)
 import {
   db, collection, addDoc, serverTimestamp,
   onSnapshot, query, orderBy, updateDoc, doc, deleteDoc
 } from "./firebase.js";
 
-// Estados en orden de flujo
 const ESTADOS = ["Diseño","Producción","Terminación","Despachado","Entregado"];
 
-// Helpers
 const $  = (q) => document.querySelector(q);
 const el = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
 const fmtDate = (d) => d?.toDate ? d.toDate().toLocaleString() : (d ? new Date(d).toLocaleString() : "—");
 const progreso = (estado) => (Math.max(0, ESTADOS.indexOf(estado)) + 1) * 20;
 const escapeHtml = (s="") => s.replace(/[&<>'"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;" }[c]));
 
-// DOM refs
+// DOM
 const board      = $("#board");
 const inOrden    = $("#inOrden");
 const inCliente  = $("#inCliente");
@@ -23,25 +21,18 @@ const inEstado   = $("#inEstado");
 const btnAdd     = $("#btnAdd");
 const search     = $("#q");
 
-const btnExport  = $("#btnExport");
-const fileImport = $("#fileImport");
-const btnMigrate = $("#btnMigrate");
-const btnClear   = $("#btnClear");
-
-// Llena el selector de estados del formulario
+// Llenar select
 ESTADOS.forEach(e => {
   const opt = document.createElement("option");
   opt.value = e; opt.textContent = e;
   inEstado.appendChild(opt);
 });
 
-// Estado en memoria (se alimenta de Firestore realtime)
 let ORDERS = [];
 
 // ===== Firestore realtime =====
 const ordersCol = collection(db, "orders");
-const qOrders   = query(ordersCol, orderBy("createdAt", "desc"));
-
+const qOrders   = query(ordersCol, orderBy("createdAt","desc"));
 onSnapshot(qOrders, (snap) => {
   ORDERS = [];
   snap.forEach(d => ORDERS.push({ id: d.id, ...d.data() }));
@@ -51,15 +42,10 @@ onSnapshot(qOrders, (snap) => {
 // ===== Render =====
 function render(){
   board.innerHTML = "";
-
   ESTADOS.forEach((estado) => {
-    // clase de columna (con y sin acentos para que pinte colores)
-    const clsNoAccent = estado
-      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-      .toLowerCase();
+    const clsNoAccent = estado.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     const col = el("section", `column c-${clsNoAccent} c-${estado.toLowerCase()}`);
 
-    // encabezado
     const h2 = el("h2");
     const title = el("div"); title.textContent = estado;
     const count = el("span","badge-count");
@@ -69,10 +55,8 @@ function render(){
     h2.appendChild(title); h2.appendChild(count);
     col.appendChild(h2);
 
-    // tarjetas o vacío
     if (items.length === 0) {
-      const empty = el("div","empty");
-      empty.textContent = `Sin pedidos en ${estado}`;
+      const empty = el("div","empty"); empty.textContent = `Sin pedidos en ${estado}`;
       col.appendChild(empty);
     } else {
       items.forEach(o => col.appendChild(renderCard(o)));
@@ -95,9 +79,9 @@ function filtered(){
 function renderCard(o){
   const card = el("article","card");
 
-  // Header: #orden + progreso
+  // Header
   const head = el("div","card-head");
-  const tag  = el("span","tag");     tag.textContent = `#${o.orden}`;
+  const tag  = el("span","tag");      tag.textContent  = `#${o.orden}`;
   const prog = el("span","progress"); prog.textContent = `${progreso(o.estado)}%`;
   head.appendChild(tag); head.appendChild(prog);
 
@@ -109,14 +93,23 @@ function renderCard(o){
     <div>Creado: ${fmtDate(o.createdAt)} · Último cambio: ${fmtDate(o.updatedAt)}</div>
   `;
 
-  // Acciones: ←  [select estado]  →  🗑
+  // ── Acciones SIEMPRE visibles ───────────────────────────────
   const act = el("div","card-actions");
+  act.style.display = "flex";             // fuerza visibilidad
+  act.style.gap = "8px";
+  act.style.alignItems = "center";
+  act.style.marginTop = "8px";
 
   const btnLeft  = el("button","iconbtn");        btnLeft.textContent  = "←";
+  const sel      = el("select","state");
   const btnRight = el("button","iconbtn");        btnRight.textContent = "→";
   const btnDel   = el("button","iconbtn danger"); btnDel.textContent   = "🗑";
 
-  const sel = el("select","state");
+  // Etiquetas de texto para que no haya duda
+  btnLeft.setAttribute("title","Mover a la izquierda");
+  btnRight.setAttribute("title","Mover a la derecha");
+  btnDel.setAttribute("title","Eliminar");
+
   ESTADOS.forEach(s => {
     const opt = el("option"); opt.value = s; opt.textContent = s;
     if (s === o.estado) opt.selected = true;
@@ -136,6 +129,7 @@ function renderCard(o){
   card.appendChild(head);
   card.appendChild(meta);
   card.appendChild(act);
+
   return card;
 }
 
@@ -150,86 +144,30 @@ async function add(data){
     updatedAt: serverTimestamp(),
   });
 }
-
 async function updateState(o, estado){
-  await updateDoc(doc(db,"orders",o.id), {
-    estado, updatedAt: serverTimestamp()
-  });
+  await updateDoc(doc(db,"orders",o.id), { estado, updatedAt: serverTimestamp() });
 }
-
 async function move(o, dir){
   const i = ESTADOS.indexOf(o.estado);
   const j = Math.max(0, Math.min(ESTADOS.length - 1, i + dir));
   if (i !== j) await updateState(o, ESTADOS[j]);
 }
-
 async function remove(o){
   await deleteDoc(doc(db,"orders", o.id));
 }
 
-// ===== Eventos UI =====
-btnAdd.onclick = async () => {
+// ===== Eventos =====
+$("#btnAdd")?.addEventListener("click", async () => {
   const orden   = inOrden.value.trim();
   const cliente = inCliente.value.trim();
   const producto= inProducto.value.trim();
   const estado  = inEstado.value;
-
-  if (!orden || !cliente || !producto) {
-    alert("Completa Orden, Cliente y Producto.");
-    return;
-  }
+  if (!orden || !cliente || !producto) { alert("Completa Orden, Cliente y Producto."); return; }
   await add({ orden, cliente, producto, estado });
-
   inOrden.value = inCliente.value = inProducto.value = "";
   inEstado.value = ESTADOS[0];
   inOrden.focus();
-};
+});
 
 search?.addEventListener("input", render);
-
-// Exportar (backup local)
-btnExport?.addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(ORDERS, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "uragrafica_backup.json";
-  a.click();
-  URL.revokeObjectURL(a.href);
-});
-
-// Importar (sube al Firestore actual)
-fileImport?.addEventListener("change", async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  try {
-    const data = JSON.parse(await file.text());
-    if (!Array.isArray(data)) throw new Error("Formato inválido");
-    for (const d of data) {
-      await add({
-        orden: d.orden, cliente: d.cliente, producto: d.producto,
-        estado: ESTADOS.includes(d.estado) ? d.estado : ESTADOS[0]
-      });
-    }
-    alert("Importación a Firestore completada.");
-  } catch (err) {
-    alert("No se pudo importar: " + err.message);
-  } finally {
-    e.target.value = "";
-  }
-});
-
-// Migrar (copia JSON al portapapeles)
-btnMigrate?.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText(JSON.stringify(ORDERS));
-    alert("Copiado al portapapeles.");
-  } catch {
-    prompt("Copia el JSON:", JSON.stringify(ORDERS));
-  }
-});
-
-// Borrar todo (solo aviso: el borrado masivo se hace en la consola de Firebase)
-btnClear?.addEventListener("click", () => {
-  alert("Para borrar TODO, usa la consola de Firebase (Firestore → Colección orders).");
-});
 
