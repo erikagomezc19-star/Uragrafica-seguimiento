@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
+  <!-- Barra superior -->
   <header class="topbar">
     <h1><span>Uragráfica</span> — Seguimiento</h1>
 
@@ -22,6 +23,7 @@
     </div>
   </header>
 
+  <!-- Formulario para crear pedidos -->
   <section class="composer">
     <input id="inOrden"     placeholder="Orden (ej: p9)" />
     <input id="inCliente"   placeholder="Cliente" />
@@ -30,17 +32,13 @@
     <button id="btnAdd" class="primary">Agregar</button>
   </section>
 
-  <main id="board" class="board">
-    <!-- Las 5 columnas se generan desde JS -->
-  </main>
+  <!-- Tablero (se llena desde app.js) -->
+  <main id="board" class="board"></main>
 
-  <footer class="foot">Hecho para ti 💙 — datos guardados en este navegador</footer>
+  <footer class="foot">Hecho para ti 💙 — datos en Firestore</footer>
 
-  <script src="app.js"></script>
-</body><footer class="foot">Hecho para ti 💙 — datos en Firestore</footer>
-
-<!-- 👇 Importa primero Firebase y luego tu app -->
-<script type="module" src="firebase.js"></script>
-<script type="module" src="app.js"></script>
+  <!-- IMPORTANTE: primero Firebase, luego tu app -->
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
