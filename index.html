@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Uragráfica — Seguimiento</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <h1><span>Uragráfica</span> — Seguimiento</h1>
+
+    <div class="actions">
+      <input id="q" class="search" placeholder="Buscar por cliente, orden o producto" />
+      <button id="btnExport">Exportar</button>
+      <label class="file-btn">
+        Importar
+        <input id="fileImport" type="file" accept="application/json" hidden />
+      </label>
+      <button id="btnMigrate">Migrar desde este navegador</button>
+      <button id="btnClear" class="danger">Borrar datos</button>
+    </div>
+  </header>
+
+  <section class="composer">
+    <input id="inOrden"     placeholder="Orden (ej: p9)" />
+    <input id="inCliente"   placeholder="Cliente" />
+    <input id="inProducto"  placeholder="Producto" />
+    <select id="inEstado"></select>
+    <button id="btnAdd" class="primary">Agregar</button>
+  </section>
+
+  <main id="board" class="board">
+    <!-- Las 5 columnas se generan desde JS -->
+  </main>
+
+  <footer class="foot">Hecho para ti 💙 — datos guardados en este navegador</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
