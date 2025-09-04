@@ -7,6 +7,7 @@
   --border:#1e233d;
 }
 
+/* Reset básico */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -27,43 +28,31 @@ button, .file-btn{
   padding:10px 14px; border-radius:12px; cursor:pointer; transition:filter .15s;
 }
 button:hover,.file-btn:hover{filter:brightness(1.1)}
-button.primary{background:#1d4ed8; border-color:#1d4ed8}
+button.primary{
+  background:#16a34a;         /* Verde UraGráfica */
+  border-color:#16a34a;
+  color:#fff; font-weight:600;
+}
+button.primary:hover{background:#22c55e}
 button.danger{background:#7f1d1d; border-color:#7f1d1d}
 .file-btn{display:inline-flex; align-items:center; gap:8px}
 
 .search{
   flex:1 1 360px; min-width:260px; padding:12px 14px; border-radius:12px;
-  border:1px solid var(--border); background:var(--panel-2); color:var(--txt);
+  border:1px solid var(--border); background:#fff; color:#000;   /* fondo blanco */
 }
+.search::placeholder{color:#555}
 
-/* Composer */
+/* Composer (inputs de Orden, Cliente, Producto, Estado) */
 .composer{
   display:grid; grid-template-columns: 1fr 1fr 1fr 180px 140px; gap:14px;
   padding:16px 20px; background:#0c1020; border-bottom:1px solid var(--border);
 }
-.composer input, .composer select {
-  padding:12px 14px;
-  border-radius:12px;
-  border:1px solid #ccc;       /* gris suave */
-  background:#fff;             /* fondo blanco */
-  color:#000;                  /* texto negro */
-  font-size:15px;
+.composer input, .composer select{
+  padding:12px 14px; border-radius:12px; border:1px solid #ccc;
+  background:#fff; color:#000; font-size:15px;
 }
-
-.composer input::placeholder {
-  color:#666;                  /* gris más visible */
-}
-
-button.primary {
-  background:#16a34a;          /* verde UraGráfica */
-  border-color:#16a34a;
-  color:#fff;
-  font-weight:600;
-}
-button.primary:hover {
-  background:#22c55e;          /* verde más claro al pasar */
-}
-
+.composer input::placeholder{color:#555}
 
 /* Board */
 .board{
@@ -103,7 +92,7 @@ button.primary:hover {
 /* Acciones */
 .card-actions{display:flex; gap:8px; align-items:center; margin-top:8px}
 select.state{
-  background:#0b1024; color:var(--txt); border:1px solid var(--border);
+  background:#fff; color:#000; border:1px solid #ccc;
   padding:8px 10px; border-radius:10px;
 }
 .iconbtn{
@@ -120,7 +109,7 @@ select.state{
 .c-diseno h2,.c-diseño h2{color:#60a5fa}
 .c-produccion h2,.c-producción h2{color:#c084fc}
 .c-terminacion h2,.c-terminación h2{color:#f472b6}
-.c-realizado h2{color:#fb923c}
+.c-realizado h2,.c-despachado h2{color:#fb923c}
 .c-entregado h2{color:#22c55e}
 
 /* Responsive */
