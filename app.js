@@ -224,5 +224,3 @@ function escapeHtml(s=""){
 
 // ======= Boot =======
 render();
-
-
