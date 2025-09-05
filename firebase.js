@@ -5,7 +5,7 @@ import {
   onSnapshot, query, orderBy, updateDoc, doc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-// Configuración (de tu proyecto)
+// Configuración de tu proyecto (según tu captura previa)
 const firebaseConfig = {
   apiKey: "AIzaSyCjYwk5u4D3ys6D_NZqQN2u_taEWKoUzKA",
   authDomain: "uragrafica-d0ac3.firebaseapp.com",
@@ -25,6 +25,5 @@ export {
   onSnapshot, query, orderBy, updateDoc, doc, deleteDoc
 };
 
-// Log para verificar en consola del navegador
+// Log para verificar en consola
 console.log("[firebase.js] Firebase listo:", firebaseConfig.projectId);
-
