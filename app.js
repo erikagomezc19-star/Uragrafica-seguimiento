@@ -1,4 +1,4 @@
-// app.js — Uragráfica (Firestore + acciones + numeración automática)
+// app.js — Uragráfica (Firestore + acciones + numeración automática + EDITAR)
 import {
   db, collection, addDoc, serverTimestamp,
   onSnapshot, query, orderBy, updateDoc, doc, deleteDoc
@@ -45,7 +45,7 @@ onSnapshot(qOrders, (snap) => {
   const tmp = [];
   snap.forEach(d => tmp.push({ id: d.id, ...d.data() }));
 
-  /* Migración suave: si hay registros con “Despachado”, renómbralos a “Realizado” */
+  // Migración suave: “Despachado” -> “Realizado”
   tmp.forEach(async o => {
     if (o.estado === "Despachado") {
       await updateDoc(doc(db,"orders",o.id), { estado: "Realizado", updatedAt: serverTimestamp() });
@@ -55,7 +55,8 @@ onSnapshot(qOrders, (snap) => {
 
   ORDERS = tmp;
   render();
-  /* Sugerir el próximo número en el input (solo lectura) */
+
+  // Sugerir el próximo número en el input (solo lectura)
   if (inOrden) inOrden.value = getNextOrderNumber();
 });
 
@@ -108,6 +109,7 @@ function filtered(){
   );
 }
 
+/* ==== Tarjeta ==== */
 function renderCard(o){
   const card = el("article","card");
 
@@ -125,12 +127,13 @@ function renderCard(o){
     <div>Creado: ${fmtDate(o.createdAt)} · Último cambio: ${fmtDate(o.updatedAt)}</div>
   `;
 
-  // Acciones (←  [estado]  →  🗑)
+  // Acciones (←  [estado]  →  🗑  ✏️Editar)
   const act = el("div","card-actions");
   const btnLeft  = el("button","iconbtn");        btnLeft.textContent  = "←";
   const sel      = el("select","state");
   const btnRight = el("button","iconbtn");        btnRight.textContent = "→";
   const btnDel   = el("button","iconbtn danger"); btnDel.textContent   = "🗑";
+  const btnEdit  = el("button","iconbtn");        btnEdit.textContent  = "✏️";
 
   ESTADOS.forEach(s => {
     const opt = el("option"); opt.value = s; opt.textContent = s;
@@ -142,11 +145,13 @@ function renderCard(o){
   btnRight.onclick = ()   => move(o, +1);
   sel.onchange     = (ev) => updateState(o, ev.target.value);
   btnDel.onclick   = ()   => confirm("¿Estás seguro de eliminar esta orden? Esta acción no se puede deshacer.") && remove(o);
+  btnEdit.onclick  = ()   => editOrder(o);
 
   act.appendChild(btnLeft);
   act.appendChild(sel);
   act.appendChild(btnRight);
   act.appendChild(btnDel);
+  act.appendChild(btnEdit);
 
   card.appendChild(head);
   card.appendChild(meta);
@@ -177,6 +182,35 @@ async function remove(o){
   await deleteDoc(doc(db,"orders", o.id));
 }
 
+/* ===== EDITAR ===== */
+async function editOrder(o){
+  // Prompts simples para no tocar HTML/CSS
+  const nuevoOrden   = prompt("Número de orden:", o.orden ?? "") ?? o.orden;
+  const nuevoCliente = prompt("Cliente:", o.cliente ?? "") ?? o.cliente;
+  const nuevoProducto= prompt("Producto:", o.producto ?? "") ?? o.producto;
+
+  // Selector de estado con listado
+  const estadosStr = ESTADOS.map((e, i) => `${i+1}. ${e}`).join("\n");
+  const elegido = prompt(`Estado actual: ${o.estado}\nElige nuevo estado (1-${ESTADOS.length}):\n\n${estadosStr}`, String(ESTADOS.indexOf(o.estado)+1));
+  let nuevoEstado = o.estado;
+  const idx = parseInt(elegido, 10);
+  if (!isNaN(idx) && idx >= 1 && idx <= ESTADOS.length) {
+    nuevoEstado = ESTADOS[idx-1];
+  }
+
+  // Normaliza orden a 3 dígitos
+  const ordenNum = String(nuevoOrden || "").replace(/\D/g,"");
+  const ordenFmt = ordenNum ? String(parseInt(ordenNum,10)).padStart(3,"0") : (o.orden ?? "001");
+
+  await updateDoc(doc(db,"orders", o.id), {
+    orden: ordenFmt,
+    cliente: String(nuevoCliente || "").trim(),
+    producto: String(nuevoProducto || "").trim(),
+    estado: nuevoEstado,
+    updatedAt: serverTimestamp(),
+  });
+}
+
 /* ===== Eventos ===== */
 
 /* Alta con número automático (el input de Orden puede ser readonly) */
@@ -191,7 +225,6 @@ btnAdd?.addEventListener("click", async () => {
   }
 
   const orden = getNextOrderNumber(); // genera el siguiente consecutivo
-
   await add({ orden, cliente, producto, estado });
 
   // limpiar y preparar siguiente número
@@ -238,17 +271,5 @@ fileImport?.addEventListener("change", async (e) => {
 /* Migrar: copia JSON al portapapeles */
 btnMigrate?.addEventListener("click", async () => {
   try {
-    await navigator.clipboard.writeText(JSON.stringify(ORDERS));
-    alert("Copiado al portapapeles.");
-  } catch {
-    prompt("Copia el JSON:", JSON.stringify(ORDERS));
-  }
-});
+    await navigator.clipboard.writeText(JSON.stringif
 
-/* Aviso sobre borrado masivo */
-btnClear?.addEventListener("click", () => {
-  alert("Para borrar TODO, usa la consola de Firebase (Firestore → Colección orders).");
-});
-
-/* Inicializa el campo de orden si la página abre sin datos aún */
-if (inOrden && !inOrden.value) inOrden.value = "001";
