@@ -127,7 +127,7 @@ function renderCard(o){
     <div>Creado: ${fmtDate(o.createdAt)} · Último cambio: ${fmtDate(o.updatedAt)}</div>
   `;
 
-  /* Fallback visible: link "Editar orden" dentro de la tarjeta */
+  /* Link azul “Editar orden” */
   const metaEdit = document.createElement("div");
   const editLink = document.createElement("button");
   editLink.textContent = "Editar orden";
@@ -140,14 +140,13 @@ function renderCard(o){
   metaEdit.appendChild(editLink);
   meta.appendChild(metaEdit);
 
-  // Acciones (←  [estado]  →  🗑  Editar)
+  // Acciones (←  [estado]  →  🗑 )
   const act = el("div","card-actions");
 
   const btnLeft  = el("button","iconbtn");        btnLeft.textContent  = "←";
   const sel      = el("select","state");
   const btnRight = el("button","iconbtn");        btnRight.textContent = "→";
   const btnDel   = el("button","iconbtn danger"); btnDel.textContent   = "🗑";
-  const btnEdit  = el("button","iconbtn");        btnEdit.textContent  = "Editar";
 
   // Rellenar selector de estados
   ESTADOS.forEach(s => {
@@ -161,13 +160,11 @@ function renderCard(o){
   btnRight.onclick = ()   => move(o, +1);
   sel.onchange     = (ev) => updateState(o, ev.target.value);
   btnDel.onclick   = ()   => confirm("¿Estás seguro de eliminar esta orden? Esta acción no se puede deshacer.") && remove(o);
-  btnEdit.onclick  = ()   => editOrder(o);
 
   act.appendChild(btnLeft);
   act.appendChild(sel);
   act.appendChild(btnRight);
   act.appendChild(btnDel);
-  act.appendChild(btnEdit);
 
   // También permite editar tocando el #orden
   tag.style.cursor = "pointer";
@@ -205,12 +202,10 @@ async function remove(o){
 
 /* ===== EDITAR ===== */
 async function editOrder(o){
-  // Prompts simples para no tocar HTML/CSS
   const nuevoOrden   = prompt("Número de orden:", o.orden ?? "") ?? o.orden;
   const nuevoCliente = prompt("Cliente:", o.cliente ?? "") ?? o.cliente;
   const nuevoProducto= prompt("Producto:", o.producto ?? "") ?? o.producto;
 
-  // Selector de estado con listado
   const estadosStr = ESTADOS.map((e, i) => `${i+1}. ${e}`).join("\n");
   const elegido = prompt(
     `Estado actual: ${o.estado}\nElige nuevo estado (1-${ESTADOS.length}):\n\n${estadosStr}`,
@@ -222,7 +217,6 @@ async function editOrder(o){
     nuevoEstado = ESTADOS[idx-1];
   }
 
-  // Normaliza orden a 3 dígitos
   const ordenNum = String(nuevoOrden || "").replace(/\D/g,"");
   const ordenFmt = ordenNum ? String(parseInt(ordenNum,10)).padStart(3,"0") : (o.orden ?? "001");
 
@@ -236,8 +230,6 @@ async function editOrder(o){
 }
 
 /* ===== Eventos ===== */
-
-/* Alta con número automático (el input de Orden es readonly) */
 btnAdd?.addEventListener("click", async () => {
   const cliente  = inCliente.value.trim();
   const producto = inProducto.value.trim();
@@ -248,19 +240,16 @@ btnAdd?.addEventListener("click", async () => {
     return;
   }
 
-  const orden = getNextOrderNumber(); // genera el siguiente consecutivo
+  const orden = getNextOrderNumber();
   await add({ orden, cliente, producto, estado });
 
-  // limpiar y preparar siguiente número
   inCliente.value = inProducto.value = "";
   inEstado.value  = ESTADOS[0];
   if (inOrden) inOrden.value = getNextOrderNumber();
 });
 
-/* Búsqueda al vuelo */
 search?.addEventListener("input", render);
 
-/* Exportar respaldo local */
 btnExport?.addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(ORDERS, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
@@ -269,7 +258,6 @@ btnExport?.addEventListener("click", () => {
   a.click(); URL.revokeObjectURL(a.href);
 });
 
-/* Importar (sube a Firestore actual) */
 fileImport?.addEventListener("change", async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -292,7 +280,6 @@ fileImport?.addEventListener("change", async (e) => {
   }
 });
 
-/* Migrar: copia JSON al portapapeles */
 btnMigrate?.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(JSON.stringify(ORDERS));
@@ -302,10 +289,8 @@ btnMigrate?.addEventListener("click", async () => {
   }
 });
 
-/* Aviso sobre borrado masivo */
 btnClear?.addEventListener("click", () => {
   alert("Para borrar TODO, usa la consola de Firebase (Firestore → Colección orders).");
 });
 
-/* Inicializa el campo de orden si la página abre sin datos aún */
 if (inOrden && !inOrden.value) inOrden.value = "001";
