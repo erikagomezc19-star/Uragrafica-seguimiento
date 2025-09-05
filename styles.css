@@ -43,7 +43,7 @@ button.danger{background:#dc2626; border-color:#dc2626; color:#fff}
 }
 .search::placeholder{color:#666}
 
-/* Composer (inputs de Orden, Cliente, Producto, Estado) */
+/* Composer */
 .composer{
   display:grid; grid-template-columns: 1fr 1fr 1fr 180px 140px; gap:14px;
   padding:16px 20px; background:#f3f4f6; border-bottom:1px solid var(--border);
@@ -98,7 +98,7 @@ select.state{
 }
 .iconbtn{
   width:40px; height:36px; border-radius:10px; background:#e5e7eb; border:1px solid var(--border);
-  color:#000; cursor:pointer; transition:filter .15s;
+  color:#000; cursor:pointer; transition:filter .15s; font-weight:600; /* que resalte */
 }
 .iconbtn:hover{filter:brightness(0.9)}
 .iconbtn.danger{background:#fee2e2; border-color:#fca5a5; color:#b91c1c}
@@ -107,11 +107,11 @@ select.state{
 .foot{padding:24px; text-align:center; color:#555}
 
 /* Colores de títulos por columna (con y sin acentos) */
-.c-diseno h2,.c-diseño h2{color:#2563eb}       /* azul */
+.c-diseno h2,.c-diseño h2{color:#2563eb}         /* azul */
 .c-produccion h2,.c-producción h2{color:#9333ea} /* morado */
 .c-terminacion h2,.c-terminación h2{color:#db2777} /* rosa */
 .c-realizado h2,.c-despachado h2{color:#f97316}   /* naranja */
-.c-entregado h2{color:#16a34a}                /* verde */
+.c-entregado h2{color:#16a34a}                  /* verde */
 
 /* Responsive */
 @media (max-width:1200px){ .board{ grid-template-columns: repeat(2, 1fr);} }
