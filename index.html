@@ -24,20 +24,21 @@
 
   <!-- Formulario para crear pedidos -->
   <section class="composer">
-   <input id="inOrden" placeholder="Orden automática" readonly />
+    <!-- El número se autogenera; readonly para evitar cambios manuales -->
+    <input id="inOrden" placeholder="Orden automática" readonly />
     <input id="inCliente"   placeholder="Cliente" />
     <input id="inProducto"  placeholder="Producto" />
     <select id="inEstado"></select>
     <button id="btnAdd" class="primary">Agregar</button>
   </section>
 
-  <!-- Tablero (se llena desde app.js) -->
+  <!-- Tablero -->
   <main id="board" class="board"></main>
 
   <footer class="foot">Hecho para ti 💙 — datos en Firestore</footer>
 
-  <!-- IMPORTANTE: primero Firebase, luego tu app (con ?v=1 para forzar recarga) -->
-  <script type="module" src="firebase.js?v=1"></script>
-  <script type="module" src="app.js?v=1"></script>
+  <!-- Primero Firebase, luego la app. ?v fuerza recarga sin caché -->
+  <script type="module" src="firebase.js?v=9"></script>
+  <script type="module" src="app.js?v=9"></script>
 </body>
 </html>
