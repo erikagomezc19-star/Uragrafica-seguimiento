@@ -127,6 +127,19 @@ function renderCard(o){
     <div>Creado: ${fmtDate(o.createdAt)} · Último cambio: ${fmtDate(o.updatedAt)}</div>
   `;
 
+  /* Fallback visible: link "Editar orden" dentro de la tarjeta */
+  const metaEdit = document.createElement("div");
+  const editLink = document.createElement("button");
+  editLink.textContent = "Editar orden";
+  editLink.style.background = "transparent";
+  editLink.style.border = "none";
+  editLink.style.color = "#1d4ed8";
+  editLink.style.textDecoration = "underline";
+  editLink.style.cursor = "pointer";
+  editLink.onclick = () => editOrder(o);
+  metaEdit.appendChild(editLink);
+  meta.appendChild(metaEdit);
+
   // Acciones (←  [estado]  →  🗑  Editar)
   const act = el("div","card-actions");
 
@@ -134,7 +147,7 @@ function renderCard(o){
   const sel      = el("select","state");
   const btnRight = el("button","iconbtn");        btnRight.textContent = "→";
   const btnDel   = el("button","iconbtn danger"); btnDel.textContent   = "🗑";
-  const btnEdit  = el("button","iconbtn");        btnEdit.textContent  = "Editar"; // visible
+  const btnEdit  = el("button","iconbtn");        btnEdit.textContent  = "Editar";
 
   // Rellenar selector de estados
   ESTADOS.forEach(s => {
@@ -156,7 +169,7 @@ function renderCard(o){
   act.appendChild(btnDel);
   act.appendChild(btnEdit);
 
-  // También permite editar tocando el badge #orden
+  // También permite editar tocando el #orden
   tag.style.cursor = "pointer";
   tag.title = "Editar esta orden";
   tag.onclick = () => editOrder(o);
@@ -199,7 +212,10 @@ async function editOrder(o){
 
   // Selector de estado con listado
   const estadosStr = ESTADOS.map((e, i) => `${i+1}. ${e}`).join("\n");
-  const elegido = prompt(`Estado actual: ${o.estado}\nElige nuevo estado (1-${ESTADOS.length}):\n\n${estadosStr}`, String(ESTADOS.indexOf(o.estado)+1));
+  const elegido = prompt(
+    `Estado actual: ${o.estado}\nElige nuevo estado (1-${ESTADOS.length}):\n\n${estadosStr}`,
+    String(ESTADOS.indexOf(o.estado)+1)
+  );
   let nuevoEstado = o.estado;
   const idx = parseInt(elegido, 10);
   if (!isNaN(idx) && idx >= 1 && idx <= ESTADOS.length) {
