@@ -1,13 +1,12 @@
 :root{
-  --bg:#ffffff;          /* Fondo general blanco */
-  --panel:#f3f4f6;       /* Paneles gris medio */
-  --panel-2:#ffffff;     /* Inputs fondo blanco */
-  --txt:#111111;         /* Texto principal negro */
-  --muted:#555555;       /* Texto secundario gris */
-  --border:#d1d5db;      /* Bordes gris claro */
+  --bg:#ffffff;
+  --panel:#f3f4f6;
+  --panel-2:#ffffff;
+  --txt:#111111;
+  --muted:#555555;
+  --border:#d1d5db;
 }
 
-/* Reset básico */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -29,7 +28,7 @@ button, .file-btn{
 }
 button:hover,.file-btn:hover{filter:brightness(0.95)}
 button.primary{
-  background:#16a34a;         /* Verde UraGráfica */
+  background:#16a34a;
   border-color:#16a34a;
   color:#fff; font-weight:600;
 }
@@ -106,12 +105,24 @@ select.state{
 /* Footer */
 .foot{padding:24px; text-align:center; color:#555}
 
-/* Colores de títulos por columna (con y sin acentos) */
-.c-diseno h2,.c-diseño h2{color:#2563eb}         /* azul */
-.c-produccion h2,.c-producción h2{color:#9333ea} /* morado */
-.c-terminacion h2,.c-terminación h2{color:#db2777} /* rosa */
-.c-realizado h2,.c-despachado h2{color:#f97316}   /* naranja */
-.c-entregado h2{color:#16a34a}                  /* verde */
+/* Colores de títulos */
+.c-diseno h2,.c-diseño h2{color:#2563eb}
+.c-produccion h2,.c-producción h2{color:#9333ea}
+.c-terminacion h2,.c-terminación h2{color:#db2777}
+.c-realizado h2,.c-despachado h2{color:#f97316}
+.c-entregado h2{color:#16a34a}
+
+/* Alerta de pedidos estancados */
+.card.alerta {
+  background: #fee2e2;
+  border: 2px solid #dc2626;
+  color: #dc2626;
+}
+.card.alerta .tag {
+  background: #dc2626;
+  color: #fff;
+  border-color: #b91c1c;
+}
 
 /* Responsive */
 @media (max-width:1200px){ .board{ grid-template-columns: repeat(2, 1fr);} }
